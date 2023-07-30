@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        input {
+            box-shadow: inset 0px 1px 0px 0px #fce2c1;
+            background: linear-gradient(to bottom, #58b616c8 75%, #2c7306d8 100%);
+            background-color: #ffc477;
+            border-radius: 11px;
+            border: 2px solid #eeb44f;
+            display: inline-block;
+            cursor: pointer;
+            color: #ffffff;
+            font-family: Arial;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 8px 18px;
+            text-decoration: none;
+            text-shadow: 0px 1px 0px #cc9f52;
+        }
+
+        input:hover {
+            background: linear-gradient(to bottom, #3b50c9 5%, #262bc7 100%);
+            background-color: #2585fb;
+        }
+
+        input:active {
+            position: relative;
+            top: 1px;
+        }
+
+        form {
+            margin: 0 auto;
+            width: 80%;
+        }
+
+        textarea {
+            background-color: rgb(44, 94, 220);
+            color: #fff
+        }
+
+        img {
+            margin: 0 auto;
+
+        }
+
+        body {
+            background-image: url(static/pxfuel.jpg);
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <form method="POST">
+        <textarea name="Article" id="comments"
+            style="width:92%;padding:1%;border-radius: 25px;height:100px;font:13px; border:10px double yellow;">
+    Paste your article here! </textarea><br>
+        <input type="button" style="margin:0px auto; display:block;" onclick="summarize()" value="Summarize">
+    </form>
+    <br>
+
+
+    <form method="POST">
+        <textarea readonly name="Article" id="summary"
+            style="width:92%;border-radius: 10px;padding:1%;height:40px;font:13px; border:5px double green;">
+    Nothing yet! </textarea>
+        <input type="button" style="margin:0px auto; display:block;" onclick="createcover()"
+            value="Create cover image for your article">
+    </form>
+    <br>
+    <br>
+
+
+
+
+
+    <center><img src="{{ url_for('static', filename='ss_cbd21a0475dbb2c87ea8abefdcd9c7ad8acab818.1920x1080.jpg' )}} "
+            id="cover" width="768" height="512" alt="" /></center>
+
+</body>
+<script>
+    async function summarize() {
+        document.getElementById('summary').value = 'We are analyzing and summarizing your article, relax this may take a while ...';
+        const post = await fetch("/summarize", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 'blog': document.getElementById('comments').value })
+        }).then((res) => res.json()).then(data => { document.getElementById('summary').value = data['summary']; console.log(data['summary']) });
+        // console.log(document.getElementById('comments').value);
+
+    }
+
+    async function createcover() {
+        document.getElementById('cover').setAttribute(
+            "src",
+            "{{ url_for('static', filename='Spinner-1s-200px.svg') }}"
+        );
+        const post = await fetch("/createcover", {
+            method: "GET",
+
+        }).then((res) => res.text()).then((data) => {
+            document.getElementById('cover').setAttribute(
+                'src',
+                "data:image/png;base64," + data,
+            );
+        });
+    }
+</script>
+
+</html>
