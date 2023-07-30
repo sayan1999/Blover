@@ -37,7 +37,7 @@ class BLOG:
         torch.cuda.empty_cache()
         print("Summarizing blog")
         self.model_ckpt = "facebook/bart-large-cnn"
-        self.device = "cuda"
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_ckpt)
         self.model = BartForConditionalGeneration.from_pretrained(self.model_ckpt).to(
             self.device
