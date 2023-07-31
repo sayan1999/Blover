@@ -12,8 +12,8 @@ def b_summarize(text):
     BLOG().summarize(text)
 
 
-def b_createcover():
-    COVER().create()
+def b_createcover(pos, neg):
+    COVER().create(pos=pos, neg=neg)
 
 
 app = Flask("app")
@@ -31,13 +31,15 @@ def summarize():
     return jsonify({"summary": BLOVER.summary})
 
 
-@app.route("/createcover", methods=["GET"])
+@app.route("/createcover", methods=["POST"])
 def createcover():
     if not BLOVER.summary:
         print("Summary missing, can't create cover")
         img = Image.open("static/DpT093HUcAIH6D-.jpeg")
     else:
-        b_createcover()
+        pos = request.get_json()["pos"].strip()
+        neg = request.get_json()["neg"].strip()
+        b_createcover(pos=pos, neg=neg)
         img = Image.open(BLOVER.cover)
     # img = img.convert("L")  # ie. convert to grayscale
 
@@ -55,4 +57,4 @@ def createcover():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080, debug=True)

@@ -12,13 +12,13 @@ import torch, os
 is_colab = lambda: "COLAB_GPU" in os.environ
 
 PROMPT_LEN, MAX_N_TOKEN = 56, 1024
-WIDTH, HEIGHT = 960, 544
+WIDTH, HEIGHT = 256, 256
 GUIDANCE = 7.5
 EPOCHS = 35
 UPSCALE_EPOCHS = 10
 OUTPUT_DIR = "OUTPUTS"
-GOOD_PROMPT = "  film grain, ujifilm XT3"
-NEGATIVE_PROMPTS = "blurry, boring, close-up, dark, details are low, distorted details, eerie, foggy, gloomy, grains, grainy, grayscale, homogenous, low contrast, low quality, lowres, macro, monochrome, multiple angles, multiple views, opaque, overexposed, oversaturated, plain, plain background, portrait, simple background, standard, surreal, unattractive, uncreative, underexposed"
+# GOOD_PROMPT = "  film grain, ujifilm XT3"
+# NEGATIVE_PROMPTS = "blurry, boring, close-up, dark, details are low, distorted details, eerie, foggy, gloomy, grains, grainy, grayscale, homogenous, low contrast, low quality, lowres, macro, monochrome, multiple angles, multiple views, opaque, overexposed, oversaturated, plain, plain background, portrait, simple background, standard, surreal, unattractive, uncreative, underexposed"
 
 
 class BLOVER:
@@ -93,17 +93,17 @@ class COVER:
             self.pipe.enable_sequential_cpu_offload()
             # self.pipe.enable_attention_slicing()
 
-    def create(self, seed=178327878873):
+    def create(self, pos="", neg="", seed=178327878873):
         generator = torch.Generator(device=self.device)
         generator = generator.manual_seed(BLOVER().randomize())
 
         max_length = self.pipe.tokenizer.model_max_length
         input_ids = self.pipe.tokenizer(
-            BLOVER.summary + GOOD_PROMPT,
+            BLOVER.summary + pos,
             return_tensors="pt",
         ).input_ids.to(self.device)
         negative_ids = self.pipe.tokenizer(
-            NEGATIVE_PROMPTS,
+            neg,
             truncation=True,
             padding="max_length",
             max_length=input_ids.shape[-1],

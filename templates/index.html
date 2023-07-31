@@ -35,6 +35,11 @@
             width: 80%;
         }
 
+        label {
+            font-weight: bold;
+            color: white;
+        }
+
         textarea {
             background-color: rgb(44, 94, 220);
             color: #fff
@@ -56,8 +61,9 @@
 
     <form method="POST">
         <textarea name="Article" id="comments"
-            style="width:92%;padding:1%;border-radius: 25px;height:100px;font:13px; border:10px double yellow;">
-    Paste your article here! </textarea><br>
+            style="width:92%;padding:1%;border-radius: 25px;height:100px;font:13px; border:10px double yellow;"
+            placeholder="Paste your article here!"></textarea>
+        <br>
         <input type="button" style="margin:0px auto; display:block;" onclick="summarize()" value="Summarize">
     </form>
     <br>
@@ -65,15 +71,20 @@
 
     <form method="POST">
         <textarea readonly name="Article" id="summary"
-            style="width:92%;border-radius: 10px;padding:1%;height:40px;font:13px; border:5px double green;">
-    Nothing yet! </textarea>
+            style="width:92%;border-radius: 10px;padding:1%;height:40px;font:13px; border:5px double green;"
+            placeholder="Nothing yet!"></textarea>
+        <br>
+        <label for="textarea">Positive prompts here (optional):</label>
+        <textarea name="prompt" id="posprompt" style="width:92%;height:17px;font:10px; "
+            placeholder="Positive prompts"></textarea>
+        <br>
+        <label for="textarea">Negative prompts here (optional):</label>
+        <textarea name="prompt" id="negprompt" style="width:92%;height:17px;font:10px; ;"
+            placeholder="Negative prompts"></textarea>
         <input type="button" style="margin:0px auto; display:block;" onclick="createcover()"
             value="Create cover image for your article">
     </form>
     <br>
-    <br>
-
-
 
 
 
@@ -91,7 +102,7 @@
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ 'blog': document.getElementById('comments').value })
-        }).then((res) => res.json()).then(data => { document.getElementById('summary').value = data['summary']; console.log(data['summary']) });
+        }).then((res) => res.json()).then(data => { document.getElementById('summary').value = data['summary']; console.log("Summary:", data['summary']) });
         // console.log(document.getElementById('comments').value);
 
     }
@@ -102,8 +113,13 @@
             "{{ url_for('static', filename='Spinner-1s-200px.svg') }}"
         );
         const post = await fetch("/createcover", {
-            method: "GET",
-
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            }, body: JSON.stringify({
+                'pos': document.getElementById('posprompt').value,
+                'neg': document.getElementById('negprompt').value
+            })
         }).then((res) => res.text()).then((data) => {
             document.getElementById('cover').setAttribute(
                 'src',
