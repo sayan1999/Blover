@@ -16,10 +16,10 @@ def b_createcover(pos, neg):
     COVER().create(pos=pos, neg=neg)
 
 
-app = Flask("app")
+bloverapp = Flask("blover")
 
 
-@app.route("/")
+@bloverapp.route("/")
 def run():
     return render_template("index.html")
 
@@ -31,7 +31,7 @@ def summarize():
     return jsonify({"summary": BLOVER.summary})
 
 
-@app.route("/createcover", methods=["POST"])
+@bloverapp.route("/createcover", methods=["POST"])
 def createcover():
     if not BLOVER.summary:
         print("Summary missing, can't create cover")
@@ -57,4 +57,4 @@ def createcover():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    bloverapp.run(host="0.0.0.0", port=8080, debug=True)
