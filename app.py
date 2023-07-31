@@ -24,7 +24,7 @@ def run():
     return render_template("index.html")
 
 
-@app.route("/summarize", methods=["POST"])
+@bloverapp.route("/summarize", methods=["POST"])
 def summarize():
     # print("Blog->>>>>>>>>", request.get_json()["blog"])
     b_summarize(request.get_json()["blog"].strip())
