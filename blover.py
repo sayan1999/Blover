@@ -9,12 +9,16 @@ from diffusers import (
 from diffusers.image_processor import VaeImageProcessor
 import torch, os
 
+is_colab = lambda: "COLAB_GPU" in os.environ
+
 PROMPT_LEN, MAX_N_TOKEN = 56, 1024
 WIDTH, HEIGHT = 960, 544
 GUIDANCE = 7.5
 EPOCHS = 35
 UPSCALE_EPOCHS = 10
 OUTPUT_DIR = "OUTPUTS"
+GOOD_PROMPT = "  film grain, ujifilm XT3"
+NEGATIVE_PROMPTS = "blurry, boring, close-up, dark, details are low, distorted details, eerie, foggy, gloomy, grains, grainy, grayscale, homogenous, low contrast, low quality, lowres, macro, monochrome, multiple angles, multiple views, opaque, overexposed, oversaturated, plain, plain background, portrait, simple background, standard, surreal, unattractive, uncreative, underexposed"
 
 
 class BLOVER:
@@ -37,7 +41,7 @@ class BLOG:
         torch.cuda.empty_cache()
         print("Summarizing blog")
         self.model_ckpt = "facebook/bart-large-cnn"
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = "cuda" if (is_colab() and torch.cuda.is_available()) else "cpu"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_ckpt)
         self.model = BartForConditionalGeneration.from_pretrained(self.model_ckpt).to(
             self.device
@@ -60,11 +64,14 @@ class BLOG:
         summarized_splits = [
             self.model.generate(split, max_length=PROMPT_LEN) for split in splits
         ]
-        summary = " ".join(
-            [
-                self.tokenizer.decode(s[0], skip_special_tokens=True)
-                for s in summarized_splits
-            ]
+        decoded_summary_splits = [
+            self.tokenizer.decode(s[0], skip_special_tokens=True)
+            for s in summarized_splits
+        ]
+        summary = " ".join(decoded_summary_splits)
+        print(
+            "Intermediate Summaries ->>>>>>>>>>>>>>>>>>>>>>>>>\n",
+            decoded_summary_splits,
         )
         return self.summarize(summary)
 
@@ -73,7 +80,7 @@ class COVER:
     def __init__(self):
         torch.cuda.empty_cache()
         print("Creating cover")
-        self.device = "cpu"
+        self.device = "cuda" if (is_colab() and torch.cuda.is_available()) else "cpu"
         self.model_id = "stabilityai/stable-diffusion-2-1"
         self.pipe = StableDiffusionPipeline.from_pretrained(
             self.model_id, safety_checker=None, torch_dtype=torch.float32
@@ -81,16 +88,46 @@ class COVER:
         self.optimize()
 
     def optimize(self):
-        self.pipe.enable_xformers_memory_efficient_attention()
-        self.pipe.enable_sequential_cpu_offload()
-        # self.pipe.enable_attention_slicing()
-        pass
+        if not is_colab():
+            self.pipe.enable_xformers_memory_efficient_attention()
+            self.pipe.enable_sequential_cpu_offload()
+            # self.pipe.enable_attention_slicing()
 
     def create(self, seed=178327878873):
         generator = torch.Generator(device=self.device)
         generator = generator.manual_seed(BLOVER().randomize())
+
+        max_length = self.pipe.tokenizer.model_max_length
+        input_ids = self.pipe.tokenizer(
+            BLOVER.summary + GOOD_PROMPT,
+            return_tensors="pt",
+        ).input_ids.to(self.device)
+        negative_ids = self.pipe.tokenizer(
+            NEGATIVE_PROMPTS,
+            truncation=True,
+            padding="max_length",
+            max_length=input_ids.shape[-1],
+            return_tensors="pt",
+        ).input_ids.to(self.device)
+
+        prompt_embeds = torch.cat(
+            [
+                self.pipe.text_encoder(input_ids[:, i : i + max_length])[0]
+                for i in range(0, input_ids.shape[-1], max_length)
+            ],
+            dim=1,
+        )
+        negative_prompt_embeds = torch.cat(
+            [
+                self.pipe.text_encoder(negative_ids[:, i : i + max_length])[0]
+                for i in range(0, input_ids.shape[-1], max_length)
+            ],
+            dim=1,
+        )
+
         BLOVER.low_res_latents = self.pipe(
-            prompt=BLOVER.summary,
+            prompt_embeds=prompt_embeds,
+            negative_prompt_embeds=negative_prompt_embeds,
             height=HEIGHT,
             width=WIDTH,
             guidance_scale=GUIDANCE,
@@ -114,7 +151,7 @@ class UPSCALAR:
     def __init__(self):
         torch.cuda.empty_cache()
         print("Scaling cover")
-        self.device = "cpu"
+        self.device = "cuda" if (is_colab() and torch.cuda.is_available()) else "cpu"
         self.model_id = "stabilityai/sd-x2-latent-upscaler"
         self.pipe = StableDiffusionLatentUpscalePipeline.from_pretrained(
             self.model_id, torch_dtype=torch.float32
@@ -122,10 +159,10 @@ class UPSCALAR:
         self.optimize()
 
     def optimize(self):
-        # self.pipe.enable_xformers_memory_efficient_attention()
-        # self.pipe.enable_sequential_cpu_offload()
-        # self.pipe.enable_attention_slicing()
-        pass
+        if not is_colab():
+            self.pipe.enable_xformers_memory_efficient_attention()
+            self.pipe.enable_sequential_cpu_offload()
+            self.pipe.enable_attention_slicing()
 
     def scale(self, file=f"cover{BLOVER.random}.png", seed=178327878873):
         generator = torch.Generator(device=self.device)
@@ -134,7 +171,7 @@ class UPSCALAR:
         upscaled_image = self.pipe(
             image=BLOVER.low_res_latents,
             num_inference_steps=UPSCALE_EPOCHS,
-            prompt=BLOVER.summary,
+            prompt=BLOVER.summary + GOOD_PROMPT,
             generator=generator,
         ).images[0]
         BLOVER.coverx = os.path.join(OUTPUT_DIR, f"coverX4{BLOVER.random}.png")
@@ -155,7 +192,7 @@ if __name__ == "__main__":
     cover.show()
     del cover
 
-    upscalar = UPSCALAR()
-    upscalar.scale()
-    upscalar.show()
-    del upscalar
+    # upscalar = UPSCALAR()
+    # upscalar.scale()
+    # upscalar.show()
+    # del upscalar

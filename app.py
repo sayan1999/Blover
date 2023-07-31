@@ -26,7 +26,7 @@ def run():
 
 @app.route("/summarize", methods=["POST"])
 def summarize():
-    print("Blog->>>>>>>>>", request.get_json()["blog"])
+    # print("Blog->>>>>>>>>", request.get_json()["blog"])
     b_summarize(request.get_json()["blog"].strip())
     return jsonify({"summary": BLOVER.summary})
 
@@ -54,4 +54,5 @@ def createcover():
     # return f'<img src="data:image/png;base64,{data}">'
 
 
-app.run(host="0.0.0.0", port=8080)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)
