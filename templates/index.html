@@ -3,55 +3,96 @@
 
 <head>
     <style>
-        input {
-            box-shadow: inset 0px 1px 0px 0px #fce2c1;
-            background: linear-gradient(to bottom, #58b616c8 75%, #2c7306d8 100%);
-            background-color: #ffc477;
-            border-radius: 11px;
-            border: 2px solid #eeb44f;
-            display: inline-block;
-            cursor: pointer;
-            color: #ffffff;
-            font-family: Arial;
-            font-size: 16px;
-            font-weight: bold;
-            padding: 8px 18px;
-            text-decoration: none;
-            text-shadow: 0px 1px 0px #cc9f52;
+        body {
+            background-color: whitesmoke;
         }
 
-        input:hover {
-            background: linear-gradient(to bottom, #3b50c9 5%, #262bc7 100%);
-            background-color: #2585fb;
+        h2 {
+            font-size: 40px;
+            font-weight: 350;
+            background-image: rgba(0, 0, 0, 0.51);
+            background-clip: text;
+            -webkit-background-clip: text;
+            text-shadow: 0px 2px 6px rgba(74, 73, 73, 0.8)
         }
 
-        input:active {
-            position: relative;
-            top: 1px;
+        h3 {
+            font-size: 20px;
+            font-weight: 30;
+            background-image: rgba(0, 0, 0, 0.51);
+            background-clip: text;
+            -webkit-background-clip: text;
+            text-shadow: 0px 0.5px 0.5px rgba(74, 73, 73, 0.8)
         }
 
-        form {
-            margin: 0 auto;
+        h4 {
+            font-size: 40px;
+            font-weight: 350;
+            background-image: rgba(0, 0, 0, 0.51);
+            background-clip: text;
+            -webkit-background-clip: text;
+            /* text-shadow: 0px 2px 6px rgba(74, 73, 73, 0.8) */
+        }
+
+        .wrapper {
+            padding: 3%;
+            background: rgb(239, 237, 237);
+            border: solid grey;
+            border-width: 0.5px;
+            border-radius: 5px;
+            font-size: 150%;
+            width: 60%;
+            margin: auto;
+            /* Add this to use flex-box */
+            display: flex;
+            flex-flow: wrap;
+            gap: 5px;
+        }
+
+        .wrapper br {
+            width: 100%;
+        }
+
+        .break {
+            flex-basis: 100%;
+            height: 0;
+        }
+
+        .nestedwrapper {
+            background: whitesmoke;
+            border: solid whitesmoke;
             width: 80%;
-        }
+            margin: auto;
+            padding: 0;
+            /* Add this to use flex-box */
+            display: flex;
+            flex-direction: row;
+            height: 40px;
 
-        label {
-            font-weight: bold;
-            color: white;
         }
 
         textarea {
-            background-color: rgb(44, 94, 220);
-            color: #fff
-        }
-
-        img {
-            margin: 0 auto;
+            background-color: whitesmoke;
+            color: black;
+            border: solid whitesmoke;
+            outline: none;
 
         }
 
-        body {
-            background-image: url(static/pxfuel.jpg);
+        button {
+            background: rgb(23, 204, 210)
+        }
+
+        button:active {
+            background: grey;
+        }
+
+        button:focus {
+            background: rgb(23, 204, 210)
+        }
+
+        button:hover {
+            transform: scale(1.1) perspective(1px)
         }
     </style>
 </head>
@@ -59,72 +100,63 @@
 
 <body>
 
-    <form method="POST">
-        <textarea name="Article" id="comments"
-            style="width:92%;padding:1%;border-radius: 25px;height:100px;font:13px; border:10px double yellow;"
-            placeholder="Paste your article here!"></textarea>
-        <br>
-        <input type="button" style="margin:0px auto; display:block;" onclick="summarize()" value="Summarize">
-    </form>
-    <br>
-
-
-    <form method="POST">
-        <textarea readonly name="Article" id="summary"
-            style="width:92%;border-radius: 10px;padding:1%;height:40px;font:13px; border:5px double green;"
-            placeholder="Nothing yet!"></textarea>
-        <br>
-        <label for="textarea">Positive prompts here (optional):</label>
-        <textarea name="prompt" id="posprompt" style="width:92%;height:17px;font:10px; "
-            placeholder="Positive prompts"></textarea>
-        <br>
-        <label for="textarea">Negative prompts here (optional):</label>
-        <textarea name="prompt" id="negprompt" style="width:92%;height:17px;font:10px; ;"
-            placeholder="Negative prompts"></textarea>
-        <input type="button" style="margin:0px auto; display:block;" onclick="createcover()"
-            value="Create cover image for your article">
-    </form>
-    <br>
-
-
-
-    <center><img src="{{ url_for('static', filename='ss_cbd21a0475dbb2c87ea8abefdcd9c7ad8acab818.1920x1080.jpg' )}} "
-            id="cover" width="768" height="512" alt="" /></center>
-
+    <center>
+        <h2>Blover: An AI Image Generator<br>Rejuvenate Your Article with AI Generated Images</h2>
+        <h3 style="color:rgb(70, 70, 70)">Generate copyright-free, realistic and relevant images for your article</h3>
+    </center>
+    <br><br><br>
+    <div class="wrapper">
+        <div class="nestedwrapper">
+            <textarea name="Article" id="article" style="height:40px;font:13px;width:90%"
+                placeholder="Paste your article here!"></textarea>
+            <button id="generatebutton" style="width:20%" onclick="generate()">Generate</button>
+        </div>
+        <div class="break"></div>
+        <div class="break"></div>
+        <div class="break"></div>
+        <div class="break"></div>
+        <div class="break"></div>
+        <div class="break"></div>
+        <div class="break"></div>
+        <div class="break"></div>
+        <div class="break"></div>
+        <div style="margin:auto">
+            <img id="cover" width="720px" height="100px" />
+        </div>
+    </div>
+    <br><br><br>
+    <center>
+        <h4>How to use?</h4>
+        <h3>Using this is very simple:<br>
+            -> Paste your article in Generator tab<br>
+            -> Hit Generate
+            -> Wait for Image to be Generated
+            -> Download the image</h3>
+    </center>
 </body>
+
+
 <script>
-    async function summarize() {
-        document.getElementById('summary').value = 'We are analyzing and summarizing your article, relax this may take a while ...';
-        const post = await fetch("/summarize", {
+    async function generate() {
+        let fixwidth = document.getElementById('cover').offsetWidth;
+        console.log("Fixed flex width: " + fixwidth)
+        const post = await fetch("/generate", {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ 'blog': document.getElementById('comments').value })
-        }).then((res) => res.json()).then(data => { document.getElementById('summary').value = data['summary']; console.log("Summary:", data['summary']) });
-        // console.log(document.getElementById('comments').value);
-
-    }
-
-    async function createcover() {
-        document.getElementById('cover').setAttribute(
-            "src",
-            "{{ url_for('static', filename='Spinner-1s-200px.svg') }}"
-        );
-        const post = await fetch("/createcover", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            }, body: JSON.stringify({
-                'pos': document.getElementById('posprompt').value,
-                'neg': document.getElementById('negprompt').value
-            })
-        }).then((res) => res.text()).then((data) => {
+            body: JSON.stringify({ 'blog': document.getElementById('article').value })
+        }).then((res) => res.json()).then((data) => {
+            document.getElementById('cover').setAttribute(
+                'height',
+                fixwidth * data['height'] / data['width']
+            );
             document.getElementById('cover').setAttribute(
                 'src',
-                "data:image/png;base64," + data,
+                "data:image/png;base64," + data['img'],
             );
+            console.log("Enhanced Image Height: " + document.getElementById('cover').offsetHeight);
         });
     }
 </script>
